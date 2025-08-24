@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROMEX - Rodeos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Barra de Navegación Superior -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                         <h1 class="text-2xl font-extrabold text-gray-900">
+                            <span class="text-green-700">AGRO</span>MEX
+                        </h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'dashboard.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'animales.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Animales</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'rodeos.html' }, '*')" class="border-green-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Rodeos</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'reportes.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reportes</a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <div class="py-10">
+        <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="md:flex md:items-center md:justify-between">
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-3xl font-bold leading-tight text-gray-900">
+                        Gestión de Rodeos
+                    </h1>
+                </div>
+                <div class="mt-4 flex md:mt-0 md:ml-4">
+                    <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'crear_rodeo.html' }, '*')" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Añadir Rodeo
+                    </a>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="px-4 py-8 sm:px-0">
+
+                    <!-- Tabla de Rodeos -->
+                    <div class="flex flex-col">
+                        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre del Rodeo</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº de Animales</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="rodeos-table-body" class="bg-white divide-y divide-gray-200">
+                                            <tr><td colspan="4" class="text-center p-4 text-gray-500">Cargando rodeos...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://agromex-api.onrender.com';
+        const token = localStorage.getItem('authToken');
+        const establecimientoId = 1; // Usaremos ID 1 como ejemplo
+
+        function checkAuth() {
+            if (!token) {
+                parent.postMessage({ type: 'navigate', url: 'login.html' }, '*');
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            parent.postMessage({ type: 'navigate', url: 'login.html' }, '*');
+        }
+
+        async function fetchData(endpoint) {
+            try {
+                await fetch(API_BASE_URL); // Despertar servidor
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`Error al cargar datos desde ${endpoint}:`, error);
+                return [];
+            }
+        }
+
+        async function generateRodeoPDF(rodeoId, rodeoNombre, animales) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const bodyData = animales
+                .filter(v => v.rodeo_id === rodeoId)
+                .map(v => [v.caravana_senasa || '', v.caravana_interna, v.nombre || '', '']);
+
+            let y = 20;
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.text('AGROMEX', 105, y, { align: 'center' });
+            y += 8;
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text('LOGÍSTICA AGROPECUARIA', 105, y, { align: 'center' });
+            y += 5;
+            doc.setLineWidth(0.5);
+            doc.line(20, y, 190, y);
+            y += 15;
+
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Informe de Animales por Rodeo: ${rodeoNombre}`, 20, y);
+            y += 15;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Nº de SENASA', 'Caravana Interna', 'Nombre', 'Observaciones']],
+                body: bodyData,
+                theme: 'grid',
+                headStyles: { fillColor: [22, 163, 74] },
+            });
+
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(10);
+                const today = new Date().toLocaleDateString('es-AR');
+                doc.text(`Reporte generado el: ${today}`, 20, 285);
+                doc.text(`Página ${i} de ${pageCount}`, 190, 285, { align: 'right' });
+            }
+
+            const nombreArchivo = `Informe_Rodeo_${rodeoNombre.replace(/ /g, '_')}.pdf`;
+            doc.save(nombreArchivo);
+        }
+
+        function renderRodeos(rodeos, animales) {
+            const tableBody = document.getElementById('rodeos-table-body');
+            tableBody.innerHTML = '';
+
+            if (rodeos.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">No se encontraron rodeos.</td></tr>`;
+                return;
+            }
+
+            // Contar animales por rodeo
+            const animalesPorRodeo = new Map();
+            animales.forEach(vaca => {
+                if (vaca.rodeo_id) {
+                    animalesPorRodeo.set(vaca.rodeo_id, (animalesPorRodeo.get(vaca.rodeo_id) || 0) + 1);
+                }
+            });
+
+            rodeos.forEach(rodeo => {
+                const count = animalesPorRodeo.get(rodeo.id) || 0;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${rodeo.nombre}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${rodeo.descripcion || ''}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${count}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'editar_rodeo.html?id=${rodeo.id}' }, '*')" class="text-green-600 hover:text-green-900">Ver / Editar</a>
+                        <button class="ml-4 text-blue-600 hover:text-blue-900" onclick="generateRodeoPDF(${rodeo.id}, '${rodeo.nombre}', ${JSON.stringify(animales).replace(/'/g, "\\'")})">Descargar PDF</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function loadPageData() {
+            const [rodeos, animales] = await Promise.all([
+                fetchData(`/api/establecimientos/${establecimientoId}/rodeos`),
+                fetchData(`/api/establecimientos/${establecimientoId}/vacas`)
+            ]);
+            renderRodeos(rodeos, animales);
+        }
+
+        window.onload = () => {
+            checkAuth();
+            loadPageData();
+        };
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroMax - Registrar Producción</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                         <h1 class="text-2xl font-extrabold text-gray-900">
+                            <span class="text-green-700">Agro</span>Max
+                        </h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'dashboard.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'animales.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Animales</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'rodeos.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Rodeos</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'reportes.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reportes</a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="py-10">
+        <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold leading-tight text-gray-900">
+                Registrar Producción para <span id="animalNameHeader"></span>
+            </h1>
+        </header>
+        <main>
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="px-4 py-8 sm:px-0">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <form id="registerProduccionForm" onsubmit="handleRegisterProduccion(event)">
+                            <input type="hidden" id="vacaIdInput" name="vaca_id">
+                            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                                <div class="sm:col-span-3">
+                                    <label for="fecha_registro" class="block text-sm font-medium text-gray-700">Fecha de Registro</label>
+                                    <div class="mt-1">
+                                        <input type="date" name="fecha_registro" id="fecha_registro" required
+                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                                <div class="sm:col-span-3">
+                                    <label for="litros_dia" class="block text-sm font-medium text-gray-700">Litros/Día</label>
+                                    <div class="mt-1">
+                                        <input type="number" step="0.01" name="litros_dia" id="litros_dia" required
+                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                                <div class="sm:col-span-3">
+                                    <label for="calidad_grasa" class="block text-sm font-medium text-gray-700">Calidad Grasa (%) (opcional)</label>
+                                    <div class="mt-1">
+                                        <input type="number" step="0.01" name="calidad_grasa" id="calidad_grasa"
+                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                                <div class="sm:col-span-3">
+                                    <label for="calidad_proteina" class="block text-sm font-medium text-gray-700">Calidad Proteína (%) (opcional)</label>
+                                    <div class="mt-1">
+                                        <input type="number" step="0.01" name="calidad_proteina" id="calidad_proteina"
+                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-5">
+                                <div class="flex justify-end">
+                                    <button type="button" onclick="goBackToAnimalFicha()"
+                                        class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" id="submitProduccionBtn"
+                                        class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                        Guardar Registro
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="message" class="mt-4 text-center text-sm"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000'; // ¡Importante! Cambiar a la URL de Render para despliegue
+        const token = localStorage.getItem('authToken');
+        const establecimientoId = 1;
+        let currentVacaId;
+        
+        function checkAuth() {
+            if (!token) {
+                parent.postMessage({ type: 'navigate', url: 'login.html' }, '*');
+            }
+        }
+        function logout() {
+            localStorage.clear();
+            parent.postMessage({ type: 'navigate', url: 'login.html' }, '*');
+        }
+        async function fetchData(endpoint, options = {}) {
+            try {
+                await fetch(API_BASE_URL);
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    ...options,
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...options.headers }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error en la petición: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error al cargar datos desde ${endpoint}:`, error);
+                throw error;
+            }
+        }
+        function goBackToAnimalFicha() {
+            if (currentVacaId) {
+                parent.postMessage({ type: 'navigate', url: `ficha_animal.html?id=${currentVacaId}` }, '*');
+            } else {
+                parent.postMessage({ type: 'navigate', url: 'animales.html' }, '*');
+            }
+        }
+        async function loadAnimalData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentVacaId = urlParams.get('vacaId');
+            if (!currentVacaId) {
+                document.getElementById('animalNameHeader').textContent = 'Error: ID de animal no especificado.';
+                document.getElementById('registerProduccionForm').style.display = 'none';
+                return;
+            }
+            document.getElementById('vacaIdInput').value = currentVacaId;
+            try {
+                const animal = await fetchData(`/api/establecimientos/${establecimientoId}/vacas/${currentVacaId}`);
+                if (animal) {
+                    document.getElementById('animalNameHeader').textContent = animal.nombre || animal.caravana_interna;
+                } else {
+                    document.getElementById('animalNameHeader').textContent = 'Animal no encontrado.';
+                    document.getElementById('registerProduccionForm').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error al cargar datos del animal:', error);
+                document.getElementById('animalNameHeader').textContent = 'Error al cargar datos del animal.';
+                document.getElementById('registerProduccionForm').style.display = 'none';
+            }
+        }
+        async function handleRegisterProduccion(event) {
+            event.preventDefault();
+            const form = event.target;
+            const produccionData = {
+                fecha_registro: form.fecha_registro.value,
+                litros_dia: parseFloat(form.litros_dia.value),
+                calidad_grasa: form.calidad_grasa.value ? parseFloat(form.calidad_grasa.value) : null,
+                calidad_proteina: form.calidad_proteina.value ? parseFloat(form.calidad_proteina.value) : null
+            };
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submitProduccionBtn');
+            messageDiv.textContent = '';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+            if (!produccionData.fecha_registro || isNaN(produccionData.litros_dia)) {
+                messageDiv.textContent = 'Campos obligatorios faltantes.';
+                messageDiv.className = 'mt-4 text-center text-sm text-red-600';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Guardar Registro';
+                return;
+            }
+            try {
+                const data = await fetchData(`/api/establecimientos/${establecimientoId}/vacas/${currentVacaId}/produccion`, {
+                    method: 'POST',
+                    body: JSON.stringify(produccionData)
+                });
+                messageDiv.textContent = `Registro de producción guardado exitosamente. Redirigiendo...`;
+                messageDiv.className = 'mt-4 text-center text-sm text-green-600';
+                setTimeout(() => { goBackToAnimalFicha(); }, 2000);
+            } catch (error) {
+                messageDiv.textContent = `Error: ${error.message}`;
+                messageDiv.className = 'mt-4 text-center text-sm text-red-600';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Guardar Registro';
+            }
+        }
+        window.onload = () => {
+            checkAuth();
+            loadAnimalData();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroMax - Subir Foto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                         <h1 class="text-2xl font-extrabold text-gray-900">
+                            <span class="text-green-700">Agro</span>Max
+                        </h1>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'dashboard.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'animales.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Animales</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'rodeos.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Rodeos</a>
+                        <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'reportes.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reportes</a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="py-10">
+        <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold leading-tight text-gray-900">
+                Subir Foto para <span id="animalNameHeader"></span>
+            </h1>
+        </header>
+        <main>
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div class="px-4 py-8 sm:px-0">
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <form id="uploadPhotoForm" onsubmit="handleUploadPhoto(event)">
+                            <input type="hidden" id="vacaIdInput" name="vaca_id">
+                            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                                <div class="sm:col-span-6">
+                                    <label for="photoFile" class="block text-sm font-medium text-gray-700">Seleccionar Archivo de Imagen</label>
+                                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                        <div class="space-y-1 text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m-4-4l5.172 5.172a4 4 0 007.076 0l-3.172-3.172M28 8a4 4 0 110 8 4 4 0 010-8zm-12 8a4 4 0 110 8 4 4 0 010-8z" stroke-width="2" />
+                                            </svg>
+                                            <div class="flex text-sm text-gray-600">
+                                                <label for="photoFile" class="relative cursor-pointer bg-white rounded-md font-medium text-green-600 hover:text-green-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500">
+                                                    <span>Subir un archivo</span>
+                                                    <input id="photoFile" name="photoFile" type="file" class="sr-only" accept="image/*" required>
+                                                </label>
+                                                <p class="pl-1">o arrastrar y soltar</p>
+                                            </div>
+                                            <p class="text-xs text-gray-500">
+                                                PNG, JPG, GIF hasta 10MB
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="sm:col-span-6">
+                                    <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción (opcional)</label>
+                                    <div class="mt-1">
+                                        <textarea id="descripcion" name="descripcion" rows="3"
+                                            class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-5">
+                                <div class="flex justify-end">
+                                    <button type="button" onclick="goBackToAnimalFicha()"
+                                        class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" id="submitPhotoBtn"
+                                        class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                        Subir Foto
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="message" class="mt-4 text-center text-sm"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000'; // ¡Importante! Cambiar a la URL de Render para despliegue
+        const token = localStorage.getItem('authToken');
+        const establecimientoId = 1;
+        let currentVacaId;
+
+        function checkAuth() {
+            if (!token) { parent.postMessage({ type: 'navigate', url: 'login.html' }, '*'); }
+        }
+        function logout() {
+            localStorage.clear();
+            parent.postMessage({ type: 'navigate', url: 'login.html' }, '*');
+        }
+        async function fetchData(endpoint) {
+            try {
+                await fetch(API_BASE_URL);
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error en la petición: ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error al cargar datos desde ${endpoint}:`, error);
+                throw error;
+            }
+        }
+        function goBackToAnimalFicha() {
+            if (currentVacaId) {
+                parent.postMessage({ type: 'navigate', url: `ficha_animal.html?id=${currentVacaId}` }, '*');
+            } else {
+                parent.postMessage({ type: 'navigate', url: 'animales.html' }, '*');
+            }
+        }
+        async function loadAnimalData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            currentVacaId = urlParams.get('vacaId');
+            if (!currentVacaId) {
+                document.getElementById('animalNameHeader').textContent = 'Error: ID de animal no especificado.';
+                document.getElementById('uploadPhotoForm').style.display = 'none';
+                return;
+            }
+            document.getElementById('vacaIdInput').value = currentVacaId;
+            try {
+                const animal = await fetchData(`/api/establecimientos/${establecimientoId}/vacas/${currentVacaId}`);
+                if (animal) {
+                    document.getElementById('animalNameHeader').textContent = animal.nombre || animal.caravana_interna;
+                } else {
+                    document.getElementById('animalNameHeader').textContent = 'Animal no encontrado.';
+                    document.getElementById('uploadPhotoForm').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error al cargar datos del animal:', error);
+                document.getElementById('animalNameHeader').textContent = 'Error al cargar datos del animal.';
+                document.getElementById('uploadPhotoForm').style.display = 'none';
+            }
+        }
+        async function handleUploadPhoto(event) {
+            event.preventDefault();
+            const form = event.target;
+            const photoFile = form.photoFile.files[0];
+            const descripcion = form.descripcion.value;
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submitPhotoBtn');
+            messageDiv.textContent = '';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Subiendo...';
+            if (!photoFile) {
+                messageDiv.textContent = 'Por favor, seleccione un archivo de imagen.';
+                messageDiv.className = 'mt-4 text-center text-sm text-red-600';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Subir Foto';
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', photoFile);
+            formData.append('descripcion', descripcion || '');
+            try {
+                await fetch(API_BASE_URL);
+                const response = await fetch(`${API_BASE_URL}/api/establecimientos/${establecimientoId}/vacas/${currentVacaId}/fotos`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error al subir la foto.');
+                }
+                messageDiv.textContent = `Foto subida exitosamente. Redirigiendo...`;
+                messageDiv.className = 'mt-4 text-center text-sm text-green-600';
+                setTimeout(() => { goBackToAnimalFicha(); }, 2000);
+            } catch (error) {
+                console.error('Error al subir foto:', error);
+                messageDiv.textContent = `Error: ${error.message}`;
+                messageDiv.className = 'mt-4 text-center text-sm text-red-600';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Subir Foto';
+            }
+        }
+        window.onload = () => {
+            checkAuth();
+            loadAnimalData();
+        };
+    </script>
+</body>
+</html>
