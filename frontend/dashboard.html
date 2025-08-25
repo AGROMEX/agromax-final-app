@@ -23,7 +23,7 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- Barra de Navegación Superior -->
+    <!-- Barra de NavegaciÃ³n Superior -->
     <nav class="bg-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -38,13 +38,13 @@
                         <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'animales.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Animales</a>
                         <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'rodeos.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Rodeos</a>
                         <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'reportes.html' }, '*')" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Reportes</a>
-                        <!-- Enlace para administración, visible solo para admin@agromex.com -->
-                        <a id="adminLink" href="#" onclick="parent.postMessage({ type: 'navigate', url: 'admin_establecimientos.html' }, '*')" class="hidden border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Administración</a>
+                        <!-- Enlace para administraciÃ³n, visible solo para admin@agromex.com -->
+                        <a id="adminLink" href="#" onclick="parent.postMessage({ type: 'navigate', url: 'admin_establecimientos.html' }, '*')" class="hidden border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">AdministraciÃ³n</a>
                     </div>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
                      <span id="welcome-message" class="text-sm font-medium text-gray-700 mr-4"></span>
-                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar Sesión</button>
+                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar SesiÃ³n</button>
                 </div>
             </div>
         </div>
@@ -74,7 +74,7 @@
                         <div class="kpi-card bg-white overflow-hidden shadow rounded-lg">
                             <div class="p-5">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Producción Hoy (Lts)</dt>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">ProducciÃ³n Hoy (Lts)</dt>
                                     <dd id="kpi-produccion" class="mt-1 text-3xl font-bold text-green-600">--</dd>
                                 </dl>
                             </div>
@@ -82,7 +82,7 @@
                         <div class="kpi-card bg-white overflow-hidden shadow rounded-lg">
                             <div class="p-5">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Próximos Partos (45d)</dt>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">PrÃ³ximos Partos (45d)</dt>
                                     <dd id="kpi-partos" class="mt-1 text-3xl font-bold text-gray-900">0</dd>
                                 </dl>
                             </div>
@@ -97,24 +97,24 @@
                         </div>
                     </div>
 
-                    <!-- Alertas y Gráficos -->
+                    <!-- Alertas y GrÃ¡ficos -->
                     <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <!-- Columna de Alertas -->
                         <div class="lg:col-span-1">
                             <div class="bg-white shadow rounded-lg p-6">
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">Alertas Importantes</h3>
                                 <ul id="alertasList" class="space-y-4">
-                                    <!-- Las alertas se cargarán aquí dinámicamente -->
+                                    <!-- Las alertas se cargarÃ¡n aquÃ­ dinÃ¡micamente -->
                                     <li id="no-alerts-message" class="text-sm text-gray-500">No hay alertas activas.</li>
                                 </ul>
                             </div>
                         </div>
-                        <!-- Columna de Gráfico -->
+                        <!-- Columna de GrÃ¡fico -->
                         <div class="lg:col-span-2">
                              <div class="bg-white shadow rounded-lg p-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Producción Últimos 7 Días</h3>
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">ProducciÃ³n Ãšltimos 7 DÃ­as</h3>
                                 <div class="h-64 flex items-center justify-center text-gray-400">
-                                    Gráfico próximamente...
+                                    GrÃ¡fico prÃ³ximamente...
                                 </div>
                             </div>
                         </div>
@@ -126,24 +126,24 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'https://agromex-api.onrender.com';
+        const API_BASE_URL = 'https://agromax-00pa.onrender.com/';
         const token = localStorage.getItem('authToken');
         const userData = JSON.parse(localStorage.getItem('userData'));
-        // Asumimos que el ID del establecimiento se guardará aquí al seleccionarlo.
+        // Asumimos que el ID del establecimiento se guardarÃ¡ aquÃ­ al seleccionarlo.
         // Por ahora, usaremos el ID 1 como ejemplo.
         const establecimientoId = 1; 
 
         function checkAuth() {
             if (!token) {
-                // Si no hay token, no se ha iniciado sesión.
-                // Se utiliza parent.postMessage para manejar la navegación en el entorno de Canvas
+                // Si no hay token, no se ha iniciado sesiÃ³n.
+                // Se utiliza parent.postMessage para manejar la navegaciÃ³n en el entorno de Canvas
                 parent.postMessage({ type: 'navigate', url: 'login.html' }, '*'); 
             }
         }
 
         function logout() {
             localStorage.clear();
-            // Se utiliza parent.postMessage para manejar la navegación en el entorno de Canvas
+            // Se utiliza parent.postMessage para manejar la navegaciÃ³n en el entorno de Canvas
             parent.postMessage({ type: 'navigate', url: 'login.html' }, '*');
         }
 
@@ -155,12 +155,12 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) {
-                    throw new Error(`Error en la petición: ${response.statusText}`);
+                    throw new Error(`Error en la peticiÃ³n: ${response.statusText}`);
                 }
                 return await response.json();
             } catch (error) {
                 console.error(`Error al cargar datos desde ${endpoint}:`, error);
-                return []; // Devolver un array vacío en caso de error
+                return []; // Devolver un array vacÃ­o en caso de error
             }
         }
 
@@ -198,17 +198,17 @@
 
             document.getElementById('welcome-message').textContent = `Bienvenido, ${userData.nombre_completo}`;
 
-            // Mostrar/Ocultar enlace de administración
+            // Mostrar/Ocultar enlace de administraciÃ³n
             const adminLink = document.getElementById('adminLink');
             if (userData.email === 'admin@agromex.com') {
-                document.getElementById('dashboardTitle').textContent = 'Administración del Sistema';
+                document.getElementById('dashboardTitle').textContent = 'AdministraciÃ³n del Sistema';
                 adminLink.classList.remove('hidden'); // Mostrar el enlace
-                // Aquí podrías cargar datos de todos los establecimientos si fuera necesario para el admin dashboard
+                // AquÃ­ podrÃ­as cargar datos de todos los establecimientos si fuera necesario para el admin dashboard
             } else {
                 document.getElementById('dashboardTitle').textContent = 'Establecimiento La Aurora'; // Nombre de ejemplo
                 adminLink.classList.add('hidden'); // Ocultar el enlace
 
-                // Cargar datos específicos del establecimiento
+                // Cargar datos especÃ­ficos del establecimiento
                 const [animales, alertas] = await Promise.all([
                     fetchData(`/api/establecimientos/${establecimientoId}/vacas`),
                     fetchData(`/api/establecimientos/${establecimientoId}/alertas`)
@@ -218,7 +218,7 @@
                 document.getElementById('kpi-total-animales').textContent = animales.length;
                 document.getElementById('kpi-alertas').textContent = alertas.length;
                 
-                const partosProximos = alertas.filter(a => a.tipo === 'Parto Próximo').length;
+                const partosProximos = alertas.filter(a => a.tipo === 'Parto PrÃ³ximo').length;
                 document.getElementById('kpi-partos').textContent = partosProximos;
                 
                 // Renderizar Alertas
@@ -234,3 +234,4 @@
 
 </body>
 </html>
+
