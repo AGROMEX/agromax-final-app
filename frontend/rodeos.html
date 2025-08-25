@@ -18,7 +18,7 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- Barra de NavegaciÛn Superior -->
+    <!-- Barra de Navegaci√≥n Superior -->
     <nav class="bg-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -36,7 +36,7 @@
                     </div>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar SesiÛn</button>
+                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar Sesi√≥n</button>
                 </div>
             </div>
         </div>
@@ -48,12 +48,12 @@
             <div class="md:flex md:items-center md:justify-between">
                 <div class="flex-1 min-w-0">
                     <h1 class="text-3xl font-bold leading-tight text-gray-900">
-                        GestiÛn de Rodeos
+                        Gesti√≥n de Rodeos
                     </h1>
                 </div>
                 <div class="mt-4 flex md:mt-0 md:ml-4">
                     <a href="#" onclick="parent.postMessage({ type: 'navigate', url: 'crear_rodeo.html' }, '*')" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        AÒadir Rodeo
+                        A√±adir Rodeo
                     </a>
                 </div>
             </div>
@@ -71,8 +71,8 @@
                                         <thead class="bg-gray-50">
                                             <tr>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre del Rodeo</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DescripciÛn</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N∫ de Animales</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripci√≥n</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N¬∫ de Animales</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                                             </tr>
                                         </thead>
@@ -91,7 +91,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'https://agromex-api.onrender.com';
+        const API_BASE_URL = 'https://agromax-00pa.onrender.com/';
         const token = localStorage.getItem('authToken');
         const establecimientoId = 1; // Usaremos ID 1 como ejemplo
 
@@ -135,7 +135,7 @@
             y += 8;
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.text('LOGÕSTICA AGROPECUARIA', 105, y, { align: 'center' });
+            doc.text('LOG√çSTICA AGROPECUARIA', 105, y, { align: 'center' });
             y += 5;
             doc.setLineWidth(0.5);
             doc.line(20, y, 190, y);
@@ -148,7 +148,7 @@
 
             doc.autoTable({
                 startY: y,
-                head: [['N∫ de SENASA', 'Caravana Interna', 'Nombre', 'Observaciones']],
+                head: [['N¬∫ de SENASA', 'Caravana Interna', 'Nombre', 'Observaciones']],
                 body: bodyData,
                 theme: 'grid',
                 headStyles: { fillColor: [22, 163, 74] },
@@ -160,7 +160,7 @@
                 doc.setFontSize(10);
                 const today = new Date().toLocaleDateString('es-AR');
                 doc.text(`Reporte generado el: ${today}`, 20, 285);
-                doc.text(`P·gina ${i} de ${pageCount}`, 190, 285, { align: 'right' });
+                doc.text(`P√°gina ${i} de ${pageCount}`, 190, 285, { align: 'right' });
             }
 
             const nombreArchivo = `Informe_Rodeo_${rodeoNombre.replace(/ /g, '_')}.pdf`;
@@ -215,4 +215,5 @@
     </script>
 
 </body>
+
 </html>
