@@ -22,7 +22,7 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- Barra de Navegación Superior -->
+    <!-- Barra de NavegaciÃ³n Superior -->
     <nav class="bg-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -40,7 +40,7 @@
                     </div>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar Sesión</button>
+                    <button onclick="logout()" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Cerrar SesiÃ³n</button>
                 </div>
             </div>
         </div>
@@ -52,24 +52,24 @@
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <!-- Encabezado de la Ficha -->
                 <div id="ficha-header" class="bg-white shadow rounded-lg p-6 mb-8 opacity-0 transition-opacity duration-500">
-                    <!-- El contenido se cargará aquí -->
+                    <!-- El contenido se cargarÃ¡ aquÃ­ -->
                 </div>
 
-                <!-- Pestañas de Navegación -->
+                <!-- PestaÃ±as de NavegaciÃ³n -->
                 <div class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button data-tab="resumen" class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Resumen</button>
                         <button data-tab="salud" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Salud</button>
-                        <button data-tab="reproduccion" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Reproducción</button>
-                        <button data-tab="produccion" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium">Producción</button>
+                        <button data-tab="reproduccion" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">ReproducciÃ³n</button>
+                        <button data-tab="produccion" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium">ProducciÃ³n</button>
                         <button data-tab="fotos" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 text-sm font-medium">Fotos</button>
                     </nav>
                 </div>
 
-                <!-- Contenido de la Pestaña -->
+                <!-- Contenido de la PestaÃ±a -->
                 <div class="mt-8">
                     <div id="tab-content" class="bg-white shadow rounded-lg p-6">
-                        <!-- El contenido de la pestaña se cargará aquí -->
+                        <!-- El contenido de la pestaÃ±a se cargarÃ¡ aquÃ­ -->
                         <p class="text-gray-500">Cargando datos...</p>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'https://agromex-api.onrender.com';
+        const API_BASE_URL = 'https://agromax-00pa.onrender.com/';
         const token = localStorage.getItem('authToken');
         const establecimientoId = 1; // Usaremos ID 1 como ejemplo
         let vacaId;
@@ -103,7 +103,7 @@
                 });
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || `Error en la petición: ${response.statusText}`);
+                    throw new Error(errorData.message || `Error en la peticiÃ³n: ${response.statusText}`);
                 }
                 return await response.json();
             } catch (error) {
@@ -163,7 +163,7 @@
                         photosHTML += `
                             <div class="bg-gray-100 rounded-lg shadow-sm overflow-hidden">
                                 <img src="${photo.url_foto}" alt="${photo.descripcion || 'Foto del animal'}" class="w-full h-48 object-cover">
-                                <p class="p-2 text-sm text-gray-600">${photo.descripcion || 'Sin descripción'}</p>
+                                <p class="p-2 text-sm text-gray-600">${photo.descripcion || 'Sin descripciÃ³n'}</p>
                             </div>
                         `;
                     });
@@ -189,9 +189,9 @@
                 }
                 
                 tableHTML += `<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr>`;
-                if(tabName === 'salud') tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>`;
+                if(tabName === 'salud') tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">DescripciÃ³n</th>`;
                 if(tabName === 'reproduccion') tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Detalle</th>`;
-                if(tabName === 'produccion') tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Litros/Día</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grasa (%)</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Proteína (%)</th>`;
+                if(tabName === 'produccion') tableHTML += `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Litros/DÃ­a</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grasa (%)</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ProteÃ­na (%)</th>`;
                 tableHTML += `</tr></thead><tbody class="bg-white divide-y divide-gray-200">`;
 
                 data.forEach(item => {
@@ -219,7 +219,7 @@
             y += 8;
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.text('LOGÍSTICA AGROPECUARIA', 105, y, { align: 'center' });
+            doc.text('LOGÃSTICA AGROPECUARIA', 105, y, { align: 'center' });
             y += 5;
             doc.setLineWidth(0.5);
             doc.line(20, y, 190, y);
@@ -231,7 +231,7 @@
             y += 10;
 
             doc.setFontSize(12);
-            doc.text('1. Datos de Identificación', 20, y);
+            doc.text('1. Datos de IdentificaciÃ³n', 20, y);
             y += 7;
             doc.setFont('helvetica', 'normal');
             doc.text(`Caravana SENASA: ${vaca.caravana_senasa || 'N/A'}`, 25, y);
@@ -246,7 +246,7 @@
             y += 15;
 
 
-            // Título para Salud
+            // TÃ­tulo para Salud
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
             doc.text('2. Historial de Salud', 20, y);
@@ -256,7 +256,7 @@
             // Tabla de Salud
             doc.autoTable({
                 startY: y,
-                head: [['Fecha', 'Tipo', 'Descripción/Observaciones']],
+                head: [['Fecha', 'Tipo', 'DescripciÃ³n/Observaciones']],
                 body: vacaData.salud.map(e => [
                     new Date(e.fecha_evento).toLocaleDateString('es-AR'),
                     e.tipo_evento,
@@ -267,16 +267,16 @@
                 headStyles: { fillColor: [22, 163, 74] },
                 margin: { left: 20, right: 20 },
             });
-            y = doc.autoTable.previous.finalY + 10; // Actualizar 'y' después de la tabla
+            y = doc.autoTable.previous.finalY + 10; // Actualizar 'y' despuÃ©s de la tabla
 
-            // Título para Reproducción
+            // TÃ­tulo para ReproducciÃ³n
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
-            doc.text('3. Historial de Reproducción', 20, y);
+            doc.text('3. Historial de ReproducciÃ³n', 20, y);
             y += 7;
             doc.setFont('helvetica', 'normal');
 
-            // Tabla de Reproducción
+            // Tabla de ReproducciÃ³n
             doc.autoTable({
                 startY: y,
                 head: [['Fecha', 'Tipo', 'Detalle', 'Inseminador']],
@@ -291,19 +291,19 @@
                 headStyles: { fillColor: [22, 163, 74] },
                 margin: { left: 20, right: 20 },
             });
-            y = doc.autoTable.previous.finalY + 10; // Actualizar 'y' después de la tabla
+            y = doc.autoTable.previous.finalY + 10; // Actualizar 'y' despuÃ©s de la tabla
 
-            // Título para Producción
+            // TÃ­tulo para ProducciÃ³n
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
-            doc.text('4. Historial de Producción', 20, y);
+            doc.text('4. Historial de ProducciÃ³n', 20, y);
             y += 7;
             doc.setFont('helvetica', 'normal');
 
-            // Tabla de Producción
+            // Tabla de ProducciÃ³n
             doc.autoTable({
                 startY: y,
-                head: [['Fecha', 'Litros/Día', 'Grasa (%)', 'Proteína (%)']],
+                head: [['Fecha', 'Litros/DÃ­a', 'Grasa (%)', 'ProteÃ­na (%)']],
                 body: vacaData.produccion.map(e => [
                     new Date(e.fecha_registro).toLocaleDateString('es-AR'),
                     e.litros_dia,
@@ -315,9 +315,9 @@
                 headStyles: { fillColor: [22, 163, 74] },
                 margin: { left: 20, right: 20 },
             });
-            y = doc.autoTable.previous.finalY + 10; // Actualizar 'y' después de la tabla
+            y = doc.autoTable.previous.finalY + 10; // Actualizar 'y' despuÃ©s de la tabla
 
-            // Título para Fotos
+            // TÃ­tulo para Fotos
             doc.setFontSize(14);
             doc.setFont('helvetica', 'bold');
             doc.text('5. Fotos del Animal', 20, y);
@@ -326,10 +326,10 @@
 
             if (vacaData.fotos && vacaData.fotos.length > 0) {
                 vacaData.fotos.forEach((foto, index) => {
-                    // Esto es solo un placeholder, jsPDF no maneja imágenes fácilmente sin un URL real.
-                    // Para PDF, se necesitaría convertir la imagen a base64 o tener una URL accesible directamente.
-                    // Aquí simplemente se listará la URL.
-                    doc.text(`Foto ${index + 1}: ${foto.descripcion || 'Sin descripción'} - ${foto.url_foto}`, 25, y);
+                    // Esto es solo un placeholder, jsPDF no maneja imÃ¡genes fÃ¡cilmente sin un URL real.
+                    // Para PDF, se necesitarÃ­a convertir la imagen a base64 o tener una URL accesible directamente.
+                    // AquÃ­ simplemente se listarÃ¡ la URL.
+                    doc.text(`Foto ${index + 1}: ${foto.descripcion || 'Sin descripciÃ³n'} - ${foto.url_foto}`, 25, y);
                     y += 7;
                     if (y > 280) { // Check for page overflow
                         doc.addPage();
@@ -348,7 +348,7 @@
                 doc.setFontSize(10);
                 const today = new Date().toLocaleDateString('es-AR');
                 doc.text(`Reporte generado el: ${today}`, 20, 285);
-                doc.text(`Página ${i} de ${pageCount}`, 190, 285, { align: 'right' });
+                doc.text(`PÃ¡gina ${i} de ${pageCount}`, 190, 285, { align: 'right' });
             }
 
             doc.save(`Ficha_AGROMEX_${vaca.caravana_interna}.pdf`);
@@ -360,7 +360,7 @@
             vacaId = urlParams.get('id');
 
             if (!vacaId) {
-                document.body.innerHTML = '<h1 class="text-red-600 text-center mt-10">Error: No se especificó un ID de animal.</h1>';
+                document.body.innerHTML = '<h1 class="text-red-600 text-center mt-10">Error: No se especificÃ³ un ID de animal.</h1>';
                 return;
             }
 
@@ -399,4 +399,5 @@
     </script>
 
 </body>
+
 </html>
