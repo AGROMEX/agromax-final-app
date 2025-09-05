@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROMAX - CONTROL DE STOCK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-image: url('https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=1974&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+        .establishment-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .establishment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); }
+        .shake-animation {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 relative min-h-screen">
+
+    <div class="flex items-center justify-center min-h-screen bg-slate-50/50 backdrop-blur-sm py-24">
+        <div class="w-full max-w-4xl mx-auto p-8">
+            <div class="text-center mb-10">
+                <h1 class="text-5xl font-extrabold text-gray-900 tracking-wide">
+                    <span class="text-green-700">Agro</span>Max
+                </h1>
+                <p class="text-2xl text-emerald-700 font-semibold tracking-widest mt-2">CONTROL DE STOCK</p>
+                <h2 class="mt-8 text-2xl font-semibold text-gray-700">Selecciona un Establecimiento</h2>
+            </div>
+
+            <div id="establishment-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Las tarjetas de establecimientos o el mensaje de bienvenida se cargarán aquí -->
+            </div>
+            
+            <div class="text-center">
+                <button id="open-add-establishment-modal" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 flex items-center justify-center mx-auto">
+                   <i data-feather="plus" class="mr-2"></i> Crear Nuevo Establecimiento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar establecimiento -->
+    <div id="add-establishment-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-medium mb-4">Nuevo Establecimiento</h3>
+            <form id="add-establishment-form" class="space-y-4">
+                <input id="establishment-name" type="text" placeholder="Nombre del Establecimiento" class="w-full p-3 border border-gray-300 rounded-md" required>
+                <input id="establishment-password" type="password" placeholder="Contraseña" class="w-full p-3 border border-gray-300 rounded-md" required>
+                <input id="establishment-email" type="email" placeholder="Correo de Recuperación" class="w-full p-3 border border-gray-300 rounded-md" required>
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" id="cancel-add-establishment" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para ingresar a establecimiento -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h3 class="text-xl font-medium mb-2 text-center">Ingresar a</h3>
+            <p id="login-establishment-name" class="text-center font-bold text-emerald-700 text-lg mb-4"></p>
+            <form id="login-form" class="space-y-4">
+                <input id="login-password" type="password" placeholder="Contraseña" class="w-full p-3 border border-gray-300 rounded-md" required>
+                <p id="login-error" class="text-red-500 text-sm text-center hidden">Contraseña incorrecta.</p>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg">Ingresar</button>
+            </form>
+            <div class="text-center mt-4">
+                <a href="#" id="forgot-password-link" class="text-sm text-blue-600 hover:underline">¿Olvidaste la contraseña?</a>
+                <div id="recovery-info" class="mt-2 text-sm text-gray-600 bg-gray-100 p-2 rounded hidden">
+                    <p>Correo de recuperación:</p>
+                    <p id="recovery-email-display" class="font-semibold"></p>
+                </div>
+            </div>
+             <button type="button" id="cancel-login" class="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <i data-feather="alert-triangle" class="h-6 w-6 text-red-600"></i>
+            </div>
+            <h3 class="text-lg font-medium mt-3">Confirmar Eliminación</h3>
+            <p id="confirmation-message" class="text-sm text-gray-500 mt-2 mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-confirmation" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-delete" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, onSnapshot, collection, addDoc, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-inventory-app';
+        let db;
+        let confirmAction = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+            if (Object.keys(firebaseConfig).length > 0) {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                const auth = getAuth(app);
+                setupAuthListener(auth);
+            }
+             setupEventListeners();
+        });
+
+        function setupAuthListener(auth) {
+            onAuthStateChanged(auth, async user => {
+                if (!user) {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                           await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                           await signInAnonymously(auth);
+                        }
+                    } catch (error) { console.error("Error al iniciar sesión:", error); }
+                }
+                loadEstablishments();
+            });
+        }
+        
+        function loadEstablishments() {
+            const establishmentRef = collection(db, `/artifacts/${appId}/public/data/establishments`);
+            onSnapshot(establishmentRef, (snapshot) => {
+                const list = document.getElementById('establishment-list');
+                if (!list) return;
+
+                if (snapshot.empty) {
+                     list.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 bg-white/50 rounded-lg"><i data-feather="folder-plus" class="mx-auto h-16 w-16 text-gray-400"></i><h3 class="mt-2 text-lg font-medium text-gray-600">No tienes establecimientos</h3><p class="mt-1 text-sm text-gray-500">Haz clic en el botón de abajo para crear el primero y comenzar a gestionar tu stock.</p></div>`;
+                } else {
+                    list.innerHTML = snapshot.docs.map(doc => {
+                        const establishment = { id: doc.id, ...doc.data() };
+                        return `
+                            <div class="establishment-card bg-white p-6 rounded-lg shadow-md border border-gray-200 text-center relative">
+                                <div class="absolute top-2 right-2">
+                                    <button data-id="${establishment.id}" data-name="${establishment.name}" class="delete-establishment-btn text-gray-400 hover:text-red-600 p-1 rounded-full"> <i data-feather="trash-2" class="w-4 h-4"></i> </button>
+                                </div>
+                                <div class="select-establishment-area cursor-pointer pt-6" data-id="${establishment.id}" data-name="${establishment.name}" data-email="${establishment.recoveryEmail}">
+                                    <i data-feather="lock" class="mx-auto h-12 w-12 text-emerald-500"></i>
+                                    <h3 class="mt-4 text-lg font-semibold text-gray-800">${establishment.name}</h3>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                feather.replace();
+
+                document.querySelectorAll('.select-establishment-area').forEach(card => {
+                    card.addEventListener('click', () => {
+                        openLoginModal(card.dataset.id, card.dataset.name, card.dataset.email);
+                    });
+                });
+
+                document.querySelectorAll('.delete-establishment-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openConfirmationModal(`¿Estás seguro de que quieres eliminar "${btn.dataset.name}"? Se perderán todos sus datos.`, () => handleDeleteEstablishment(btn.dataset.id));
+                    });
+                });
+
+            });
+        }
+
+        async function createFictitiousData(establishmentId) {
+            try {
+                const getSubCollection = (coll) => collection(db, `/artifacts/${appId}/public/data/establishments/${establishmentId}/${coll}`);
+                const warehousesRef = getSubCollection('warehouses');
+                const customersRef = getSubCollection('customers');
+                const productsRef = getSubCollection('products');
+                const warehouse1Ref = await addDoc(warehousesRef, { name: "Depósito Central", location: "Rosario del Tala" });
+                const warehouse2Ref = await addDoc(warehousesRef, { name: "Sucursal Nogoyá", location: "Nogoyá" });
+                await addDoc(customersRef, { name: "Consumidor Final" });
+                await addDoc(customersRef, { name: "Distribuidora Litoral" });
+                await addDoc(productsRef, {
+                    name: "Miel Pura de Eucalipto 1kg", sku: "MIEL-EUC-1KG",
+                    description: "Miel de abejas de floración de eucalipto, cosechada en Entre Ríos.",
+                    price: 2500.00, minStock: 20,
+                    stockByWarehouse: {
+                        [warehouse1Ref.id]: { quantity: 50 },
+                        [warehouse2Ref.id]: { quantity: 15 }
+                    }
+                });
+                await addDoc(productsRef, {
+                    name: "Polen Granulado 250g", sku: "POLEN-GRA-250G",
+                    description: "Polen multifloral granulado, secado a baja temperatura.",
+                    price: 1800.00, minStock: 10,
+                    stockByWarehouse: { [warehouse1Ref.id]: { quantity: 30 } }
+                });
+                await addDoc(productsRef, {
+                    name: "Jalea Real Pura 10g", sku: "JALEA-REAL-10G",
+                    description: "Jalea real pura envasada al vacío para máxima frescura.",
+                    price: 3500.00, minStock: 5,
+                    stockByWarehouse: { [warehouse2Ref.id]: { quantity: 12 } }
+                });
+            } catch (error) {
+                console.error("Error creating fictitious data:", error);
+            }
+        }
+
+        async function handleAddEstablishment(e) {
+            e.preventDefault();
+            const name = document.getElementById('establishment-name').value.trim();
+            const password = document.getElementById('establishment-password').value;
+            const recoveryEmail = document.getElementById('establishment-email').value.trim();
+            
+            if (name && password && recoveryEmail) {
+                const establishmentRef = collection(db, `/artifacts/${appId}/public/data/establishments`);
+                const newDocRef = await addDoc(establishmentRef, { name, password, recoveryEmail });
+                await createFictitiousData(newDocRef.id);
+                toggleModal('add-establishment-modal', false);
+                document.getElementById('add-establishment-form').reset();
+            }
+        }
+        
+        async function handleDeleteEstablishment(establishmentId) {
+             const establishmentRef = doc(db, `/artifacts/${appId}/public/data/establishments`, establishmentId);
+            try {
+                await deleteDoc(establishmentRef);
+                toggleModal('confirmation-modal', false);
+            } catch (error) {
+                console.error("Error eliminando establecimiento:", error);
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const establishmentId = form.dataset.id;
+            const establishmentName = form.dataset.name;
+            const password = document.getElementById('login-password').value;
+            const errorP = document.getElementById('login-error');
+            
+            const docRef = doc(db, `/artifacts/${appId}/public/data/establishments`, establishmentId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists() && docSnap.data().password === password) {
+                sessionStorage.setItem('selectedEstablishmentId', establishmentId);
+                sessionStorage.setItem('selectedEstablishmentName', establishmentName);
+                window.location.href = './index.html';
+            } else {
+                errorP.classList.remove('hidden');
+                form.parentElement.classList.add('shake-animation');
+                setTimeout(() => form.parentElement.classList.remove('shake-animation'), 500);
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('open-add-establishment-modal').addEventListener('click', () => toggleModal('add-establishment-modal', true));
+            document.getElementById('cancel-add-establishment').addEventListener('click', () => toggleModal('add-establishment-modal', false));
+            document.getElementById('cancel-login').addEventListener('click', () => toggleModal('login-modal', false));
+            document.getElementById('add-establishment-form').addEventListener('submit', handleAddEstablishment);
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('recovery-info').classList.toggle('hidden');
+            });
+            document.getElementById('confirm-delete').addEventListener('click', () => { if (confirmAction) confirmAction(); });
+            document.getElementById('cancel-confirmation').addEventListener('click', () => toggleModal('confirmation-modal', false));
+        }
+
+        function toggleModal(modalId, show) {
+            document.getElementById(modalId).classList.toggle('hidden', !show);
+             if(!show && modalId === 'login-modal') { // Reset login modal on close
+                document.getElementById('login-form').reset();
+                document.getElementById('login-error').classList.add('hidden');
+                document.getElementById('recovery-info').classList.add('hidden');
+            }
+        }
+
+        function openLoginModal(id, name, email) {
+            document.getElementById('login-establishment-name').textContent = name;
+            document.getElementById('recovery-email-display').textContent = email;
+            const form = document.getElementById('login-form');
+            form.dataset.id = id;
+            form.dataset.name = name;
+            toggleModal('login-modal', true);
+        }
+
+        function openConfirmationModal(message, action) {
+            document.getElementById('confirmation-message').textContent = message;
+            confirmAction = action;
+            toggleModal('confirmation-modal', true);
+        }
+    </script>
+
+</body>
+</html>
+

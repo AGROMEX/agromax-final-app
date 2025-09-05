@@ -1,0 +1,960 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROMAX - Sistema de Inventario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #4b5563;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .nav-link:hover {
+            background-color: #e5e7eb;
+            color: #111827;
+        }
+        .nav-link.active {
+            background-color: #047857; /* Emerald-700 */
+            color: white;
+            font-weight: 600;
+        }
+        .nav-link .feather {
+            margin-right: 0.75rem;
+            width: 20px;
+            height: 20px;
+        }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.5); }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar de Navegación -->
+        <aside class="w-64 bg-white shadow-md flex-shrink-0 flex flex-col">
+            <div class="p-6 flex flex-col items-center justify-center border-b h-28">
+                <!-- Titulo -->
+                <h1 class="text-2xl font-extrabold text-gray-900">
+                    <span class="text-green-700">Agro</span>Max
+                </h1>
+                <p class="text-center text-md text-emerald-700 font-semibold tracking-widest">LOGÍSTICA</p>
+                <p class="text-center text-sm font-medium text-gray-500 mt-2">
+                    <span class="px-2 pb-1 border-b border-gray-400 italic">Nombre del Establecimiento</span>
+                </p>
+            </div>
+            <nav id="navigation" class="p-4 space-y-2">
+                <a href="#" data-tab="dashboard" class="nav-link active"><i data-feather="home"></i>Dashboard</a>
+                <a href="#" data-tab="inventario" class="nav-link"><i data-feather="archive"></i>Inventario</a>
+                <a href="#" data-tab="transferencias" class="nav-link"><i data-feather="truck"></i>Transferencias</a>
+                <a href="#" data-tab="almacenes" class="nav-link"><i data-feather="package"></i>Almacenes</a>
+                <a href="#" data-tab="clientes" class="nav-link"><i data-feather="users"></i>Clientes</a>
+            </nav>
+
+            <!-- Banderas Mercosur -->
+            <div class="mt-auto p-4 border-t">
+                <div class="flex justify-around items-center" title="Mercosur">
+                    <!-- Argentina -->
+                    <svg width="24" height="16" viewBox="0 0 3 2"><rect width="3" height="2" fill="#75AADB"/><rect width="3" height="1" y="0.5" fill="#fff"/></svg>
+                    <!-- Brasil -->
+                    <svg width="24" height="16" viewBox="0 0 22 15"><rect width="22" height="15" fill="#009B3A"/><polygon points="11,1.5 2,7.5 11,13.5 20,7.5" fill="#FFCC29"/></svg>
+                    <!-- Paraguay -->
+                    <svg width="24" height="16" viewBox="0 0 3 2"><rect width="3" height="0.67" fill="#D52B1E"/><rect width="3" height="0.66" y="0.67" fill="#fff"/><rect width="3" height="0.67" y="1.33" fill="#0038A8"/></svg>
+                    <!-- Uruguay -->
+                    <svg width="24" height="16" viewBox="0 0 9 5"><rect width="9" height="5" fill="#fff"/><path d="M0 1h9M0 3h9" stroke="#0038A8" stroke-width="1"/></svg>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="flex-1 p-6 md:p-8 overflow-y-auto">
+            <div id="tab-content">
+                <!-- Pestaña Dashboard -->
+                <div id="dashboard" class="tab-pane space-y-8">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                        <h2 class="text-3xl font-bold text-gray-900">Resumen General</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="stat-card">
+                            <h3 class="text-gray-500 font-medium">Total de Productos</h3>
+                            <p id="total-products" class="text-3xl font-bold text-emerald-600 mt-2">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="text-gray-500 font-medium">Total de Almacenes</h3>
+                            <p id="total-warehouses" class="text-3xl font-bold text-blue-600 mt-2">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="text-gray-500 font-medium">Total de Clientes</h3>
+                            <p id="total-customers" class="text-3xl font-bold text-purple-600 mt-2">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 class="text-gray-500 font-medium">Alertas de Bajo Stock</h3>
+                            <p id="low-stock-alerts" class="text-3xl font-bold text-red-600 mt-2">0</p>
+                        </div>
+                        <!-- Nuevo panel de valor de inventario -->
+                        <div class="stat-card md:col-span-4 lg:col-span-1">
+                             <h3 class="text-gray-500 font-medium">Valor Total de Inventario</h3>
+                             <p id="total-value" class="text-3xl font-bold text-green-600 mt-2">$0</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Stock por Almacén (Unidades)</h3>
+                            <div class="h-80">
+                                <canvas id="stock-by-warehouse-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Últimos Movimientos</h3>
+                            <div class="overflow-y-auto h-80 pr-2">
+                                <table class="min-w-full">
+                                    <tbody id="recent-movements-list" class="divide-y divide-gray-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pestaña de Inventario -->
+                <div id="inventario" class="tab-pane hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                        <h2 class="text-3xl font-bold text-gray-900">Productos en Inventario</h2>
+                        <button id="open-add-product-modal" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                           <i data-feather="plus" class="mr-2"></i> Agregar Producto
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock por Almacén</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Unitario</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="product-list" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pestaña de Transferencias -->
+                <div id="transferencias" class="tab-pane hidden space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                        <h2 class="text-3xl font-bold text-gray-900">Transferencias de Stock</h2>
+                         <button id="open-transfer-modal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                            <i data-feather="plus-circle" class="mr-2"></i>Nueva Transferencia
+                        </button>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-md">
+                        <h3 class="text-xl font-semibold mb-4">Historial de Movimientos</h3>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origen</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destino</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="movements-list" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pestaña de Almacenes -->
+                <div id="almacenes" class="tab-pane hidden space-y-6">
+                    <h2 class="text-3xl font-bold text-gray-900">Gestionar Almacenes</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-medium mb-4">Agregar Nuevo Almacén</h3>
+                            <form id="add-warehouse-form" class="space-y-4">
+                                <input id="warehouse-name" type="text" placeholder="Nombre del Almacén" class="w-full p-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500" required>
+                                <input id="warehouse-location" type="text" placeholder="Ubicación (Opcional)" class="w-full p-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500">
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Guardar Almacén</button>
+                            </form>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                             <h3 class="text-lg font-medium mb-4">Almacenes Existentes</h3>
+                             <ul id="warehouse-list"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pestaña de Clientes -->
+                <div id="clientes" class="tab-pane hidden space-y-6">
+                    <h2 class="text-3xl font-bold text-gray-900">Gestionar Clientes</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-medium mb-4">Agregar Nuevo Cliente</h3>
+                            <form id="add-customer-form" class="space-y-4">
+                                <input id="customer-name" type="text" placeholder="Nombre del Cliente" class="w-full p-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500" required>
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Guardar Cliente</button>
+                            </form>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                             <h3 class="text-lg font-medium mb-4">Clientes Existentes</h3>
+                             <ul id="customer-list" class="space-y-2"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modales -->
+    <div id="add-product-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+            <h3 class="text-xl font-medium mb-4">Agregar Nuevo Producto</h3>
+            <form id="add-product-form" class="space-y-4">
+                <input type="hidden" id="product-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input id="product-name" type="text" placeholder="Nombre del Producto" class="w-full p-2 border border-gray-300 rounded-md" required>
+                    <input id="product-sku" type="text" placeholder="SKU" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <textarea id="product-description" placeholder="Descripción" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <input id="product-min-stock" type="number" min="0" placeholder="Alerta de Stock Mínimo" class="w-full p-2 border border-gray-300 rounded-md" required>
+                     <input id="product-price" type="number" step="0.01" min="0" placeholder="Precio Unitario" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <h4 class="text-md font-medium pt-2">Stock Inicial</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <select id="initial-stock-warehouse" class="w-full p-2 border border-gray-300 rounded-md" required></select>
+                     <input id="initial-stock-quantity" type="number" min="1" placeholder="Cantidad" class="w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" id="cancel-add-product" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="adjust-stock-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+          <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-medium mb-4">Ajustar Stock de <span id="adjust-stock-product-name" class="font-bold"></span></h3>
+            <form id="adjust-stock-form" class="space-y-4">
+                <input type="hidden" id="adjust-stock-product-id">
+                <select id="adjust-stock-warehouse" class="w-full p-2 border border-gray-300 rounded-md" required></select>
+                <input id="adjust-stock-quantity" type="number" placeholder="Cantidad a agregar/restar" class="w-full p-2 border border-gray-300 rounded-md" required>
+                <p class="text-sm text-gray-500">Use números positivos para agregar y negativos para restar.</p>
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" id="cancel-adjust-stock" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">Ajustar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="transfer-stock-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+            <h3 class="text-xl font-medium mb-4">Nueva Transferencia de Stock</h3>
+            <form id="transfer-stock-form" class="space-y-4">
+                <div>
+                    <label for="transfer-product" class="block text-sm font-medium text-gray-700">Producto</label>
+                    <select id="transfer-product" class="w-full mt-1 p-2 border border-gray-300 rounded-md" required></select>
+                </div>
+                <div>
+                    <label for="transfer-from-warehouse" class="block text-sm font-medium text-gray-700">Origen (Almacén)</label>
+                    <select id="transfer-from-warehouse" class="w-full mt-1 p-2 border border-gray-300 rounded-md" required></select>
+                </div>
+                <div>
+                    <label for="transfer-quantity" class="block text-sm font-medium text-gray-700">Cantidad</label>
+                    <input id="transfer-quantity" type="number" min="1" placeholder="Cantidad" class="w-full mt-1 p-2 border border-gray-300 rounded-md" required>
+                    <p id="available-stock-info" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+                <div>
+                    <label for="transfer-to" class="block text-sm font-medium text-gray-700">Destino</label>
+                    <select id="transfer-to" class="w-full mt-1 p-2 border border-gray-300 rounded-md" required></select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" id="cancel-transfer" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Confirmar Transferencia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+            <h3 id="notification-title" class="text-xl font-medium mb-2"></h3>
+            <p id="notification-message" class="text-gray-600 mb-4"></p>
+            <button id="close-notification-modal" class="font-bold py-2 px-6 rounded-lg text-white">OK</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <i data-feather="alert-triangle" class="h-6 w-6 text-red-600"></i>
+            </div>
+            <h3 id="confirmation-title" class="text-lg font-medium mt-3">Confirmar Eliminación</h3>
+            <p id="confirmation-message" class="text-sm text-gray-500 mt-2 mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="cancel-confirmation" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="confirm-delete" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, doc, onSnapshot, collection, addDoc, serverTimestamp, 
+            query, orderBy, runTransaction, deleteDoc, updateDoc, increment
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configuración ---
+        // Estas variables globales se proporcionan automáticamente en el entorno de Canvas.
+        // No es necesario que las modifiques.
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-inventory-app';
+        let app, db, auth, userId;
+        let isAuthReady = false;
+
+        // --- Estado de la aplicación (caché de datos) ---
+        let products = [], warehouses = [], customers = [], movements = [];
+        let stockChart = null;
+        let confirmAction = null;
+
+        // --- Referencias de Colecciones ---
+        // Se usa la ruta pública para que los datos sean compartidos entre usuarios.
+        const getCollectionRef = (coll) => collection(db, `/artifacts/${appId}/public/data/${coll}`);
+
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            feather.replace();
+            if (Object.keys(firebaseConfig).length > 0) {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setupAuthListener();
+            } else {
+                console.error("Configuración de Firebase no disponible.");
+            }
+        });
+
+        // Escucha cambios en el estado de autenticación para inicializar la app
+        function setupAuthListener() {
+            onAuthStateChanged(auth, async user => {
+                if (!user) {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            user = (await signInWithCustomToken(auth, __initial_auth_token)).user;
+                        } else {
+                            user = (await signInAnonymously(auth)).user;
+                        }
+                    } catch (error) { 
+                        console.error("Error al iniciar sesión:", error); 
+                        showNotification("Error de Autenticación", "No se pudo iniciar sesión. Vuelve a intentarlo.", true);
+                        return; 
+                    }
+                }
+                userId = user.uid;
+                if (!isAuthReady) {
+                    isAuthReady = true;
+                    initializeAppListeners();
+                }
+            });
+        }
+        
+        // Inicializa los listeners una vez que la autenticación esté lista
+        function initializeAppListeners() {
+            setupEventListeners();
+            fetchData();
+            handleNavigation();
+        }
+
+        // Obtiene y sincroniza los datos de Firestore en tiempo real
+        function fetchData() {
+            if (!isAuthReady) return;
+            const updateAll = () => { renderAll(); populateSelects(); };
+            onSnapshot(getCollectionRef('warehouses'), s => { warehouses = s.docs.map(d => ({ id: d.id, ...d.data() })); updateAll(); }, e => console.error("Error Warehouses:", e));
+            onSnapshot(getCollectionRef('customers'), s => { customers = s.docs.map(d => ({ id: d.id, ...d.data() })); updateAll(); }, e => console.error("Error Customers:", e));
+            onSnapshot(getCollectionRef('products'), s => { products = s.docs.map(d => ({ id: d.id, ...d.data() })); updateAll(); }, e => console.error("Error Products:", e));
+            const movementsQuery = query(getCollectionRef('stock_movements'), orderBy('timestamp', 'desc'));
+            onSnapshot(movementsQuery, s => { movements = s.docs.map(d => ({ id: d.id, ...d.data() })); updateAll(); }, e => console.error("Error Movements:", e));
+        }
+
+        // --- LÓGICA DE RENDERIZADO ---
+        // Renderiza todas las secciones de la interfaz de usuario con los datos más recientes
+        function renderAll() {
+            renderDashboard();
+            renderProducts();
+            renderWarehouses();
+            renderCustomers();
+            renderMovements();
+            renderDashboardCharts();
+            feather.replace();
+        }
+
+        function renderDashboard() {
+            const lowStockProducts = products.filter(p => {
+                const totalStock = getTotalStock(p);
+                return totalStock > 0 && totalStock < (p.minStock || 0);
+            });
+
+            document.getElementById('total-products').textContent = products.length;
+            document.getElementById('total-warehouses').textContent = warehouses.length;
+            document.getElementById('total-customers').textContent = customers.length;
+            document.getElementById('low-stock-alerts').textContent = lowStockProducts.length;
+            document.getElementById('total-value').textContent = getTotalInventoryValue().toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+            
+            const recentMovementsList = document.getElementById('recent-movements-list');
+            if(recentMovementsList) recentMovementsList.innerHTML = movements.slice(0, 10).map(m => {
+                const date = m.timestamp ? new Date(m.timestamp.seconds * 1000).toLocaleString('es-AR') : 'N/A';
+                return `
+                <tr class="text-sm">
+                    <td class="py-3 pr-2">
+                        <div><span class="font-semibold">${m.productName}</span> (${m.quantity} u.)</div>
+                        <div class="text-xs text-gray-500">${date}</div>
+                    </td>
+                    <td class="py-3 pr-4 text-gray-600 text-right">
+                        <div>de ${m.fromName}</div>
+                        <div>a ${m.toName}</div>
+                    </td>
+                </tr>
+            `}).join('') || `<tr><td class="py-4 text-gray-500" colspan="2">Sin movimientos recientes.</td></tr>`;
+        }
+
+        function renderDashboardCharts() {
+            const stockCtx = document.getElementById('stock-by-warehouse-chart')?.getContext('2d');
+            if (stockCtx) {
+                const stockByWarehouse = {};
+                warehouses.forEach(w => { stockByWarehouse[w.id] = { name: w.name, totalStock: 0 }; });
+                products.forEach(p => {
+                    for (const whId in (p.stockByWarehouse || {})) {
+                        if (stockByWarehouse[whId]) { 
+                            stockByWarehouse[whId].totalStock += p.stockByWarehouse[whId];
+                        }
+                    }
+                });
+                
+                const labels = Object.values(stockByWarehouse).map(w => w.name);
+                const data = Object.values(stockByWarehouse).map(w => w.totalStock);
+                
+                if (stockChart) stockChart.destroy();
+                stockChart = new Chart(stockCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Unidades Totales',
+                            data: data,
+                            backgroundColor: [
+                                'rgba(4, 120, 87, 0.8)', // Emerald
+                                'rgba(16, 185, 129, 0.8)', // Emerald-500
+                                'rgba(5, 150, 105, 0.8)', // Emerald-600
+                                'rgba(2, 132, 199, 0.8)', // Sky-600
+                                'rgba(20, 184, 166, 0.8)', // Teal-500
+                                'rgba(101, 163, 13, 0.8)' // Lime-600
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                align: 'center',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += context.raw.toFixed(0) + ' u.';
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderProducts() {
+            const list = document.getElementById('product-list');
+            if (!list) return;
+            list.innerHTML = products.map(p => {
+                const totalStock = getTotalStock(p);
+                const stockDetail = Object.entries(p.stockByWarehouse || {})
+                    .map(([whId, qty]) => {
+                        const warehouse = warehouses.find(w => w.id === whId);
+                        if (qty > 0) return `<span class="text-xs inline-block mr-2 mb-1 p-1 bg-gray-200 rounded">${warehouse?.name || 'N/A'}: ${qty}</span>`;
+                        return '';
+                    }).join('') || '<span class="text-xs text-gray-500">Sin stock</span>';
+
+                   const isLowStock = totalStock > 0 && totalStock < (p.minStock || 0);
+                return `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${p.name} ${isLowStock ? '<span class="text-amber-500" title="Bajo Stock">⚠️</span>' : ''}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.sku}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${totalStock > 0 ? 'text-green-600' : 'text-red-600'}">${totalStock}</td>
+                        <td class="px-6 py-4">${stockDetail}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${p.price ? p.price.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : 'N/A'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button data-id="${p.id}" data-name="${p.name}" class="adjust-stock-btn text-indigo-600 hover:text-indigo-900 mr-3">Ajustar</button>
+                            <button data-id="${p.id}" data-name="${p.name}" class="delete-product-btn text-red-600 hover:text-red-900">Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('') || `<tr><td colspan="5" class="text-center py-4 text-gray-500">No hay productos.</td></tr>`;
+
+            document.querySelectorAll('.adjust-stock-btn').forEach(btn => {
+                btn.addEventListener('click', () => openAdjustStockModal(btn.dataset.id, btn.dataset.name));
+            });
+            document.querySelectorAll('.delete-product-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openConfirmationModal(
+                        `¿Estás seguro de que quieres eliminar el producto "${btn.dataset.name}"? Esta acción no se puede deshacer.`,
+                        () => handleDeleteProduct(btn.dataset.id)
+                    );
+                });
+            });
+        }
+        
+        function renderWarehouses() {
+            const list = document.getElementById('warehouse-list');
+            if(!list) return;
+
+            list.innerHTML = warehouses.map(w => {
+                let totalStock = 0;
+                const stockItems = [];
+
+                products.forEach(p => {
+                    const productQty = p.stockByWarehouse?.[w.id] || 0;
+                    if (productQty > 0) {
+                        totalStock += productQty;
+                        stockItems.push({ name: p.name, qty: productQty });
+                    }
+                });
+
+                const stockDetailsHTML = stockItems.length > 0
+                    ? stockItems.map(item => `<li class="flex justify-between text-sm py-1 px-2 hover:bg-gray-50"><span>${item.name}</span> <span class="font-medium">${item.qty}</span></li>`).join('')
+                    : '<li class="text-sm text-gray-500 px-2 py-1">Este almacén está vacío.</li>';
+
+                return `
+                    <li class="bg-white rounded-lg shadow-sm border border-gray-200 mb-3 overflow-hidden">
+                        <details>
+                            <summary class="p-4 cursor-pointer flex justify-between items-center font-medium hover:bg-gray-50">
+                                <div>
+                                    ${w.name}
+                                    <span class="text-sm text-gray-500 block">${w.location || 'Sin ubicación'}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="text-right mr-4">
+                                        <span class="font-bold text-lg text-emerald-600">${totalStock}</span>
+                                        <span class="text-xs text-gray-500 block">unidades</span>
+                                    </div>
+                                    <button data-id="${w.id}" data-name="${w.name}" class="delete-warehouse-btn text-gray-400 hover:text-red-600 p-1 rounded-full">
+                                        <i data-feather="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </summary>
+                            <div class="border-t border-gray-200 p-2 bg-slate-50">
+                                <h4 class="font-semibold text-xs uppercase text-gray-600 px-2 mb-1">Detalle de Stock</h4>
+                                <ul class="divide-y divide-gray-100">
+                                    ${stockDetailsHTML}
+                                </ul>
+                            </div>
+                        </details>
+                    </li>
+                `;
+            }).join('') || `<li class="text-center py-4 text-gray-500">No hay almacenes creados.</li>`;
+
+                document.querySelectorAll('.delete-warehouse-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault(); // Evita que el `details` se cierre
+                        openConfirmationModal(
+                            `¿Estás seguro de que quieres eliminar el almacén "${btn.dataset.name}"?`,
+                            () => handleDeleteWarehouse(btn.dataset.id)
+                        );
+                    });
+                });
+        }
+
+        function renderCustomers() {
+              const list = document.getElementById('customer-list');
+            if(!list) return;
+            list.innerHTML = customers.map(c => `
+                <li class="p-2 border-b flex justify-between items-center">
+                    <span>${c.name}</span>
+                    <button data-id="${c.id}" data-name="${c.name}" class="delete-customer-btn text-gray-400 hover:text-red-600 p-1 rounded-full">
+                        <i data-feather="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </li>
+            `).join('') || `<li class="text-center py-4 text-gray-500">No hay clientes.</li>`;
+
+            document.querySelectorAll('.delete-customer-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openConfirmationModal(
+                        `¿Estás seguro de que quieres eliminar al cliente "${btn.dataset.name}"?`,
+                        () => handleDeleteCustomer(btn.dataset.id)
+                    );
+                });
+            });
+        }
+
+        function renderMovements() {
+              const list = document.getElementById('movements-list');
+            if(!list) return;
+            list.innerHTML = movements.map(m => `
+                <tr>
+                    <td class="px-6 py-4 text-sm text-gray-500">${m.timestamp ? new Date(m.timestamp.seconds * 1000).toLocaleString('es-AR') : 'N/A'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">${m.productName}</td>
+                    <td class="px-6 py-4 text-sm font-medium">${m.quantity}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${m.fromName}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${m.toName}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="5" class="text-center py-4 text-gray-500">No hay movimientos.</td></tr>`;
+        }
+        
+        // --- MANEJO DE EVENTOS ---
+        function setupEventListeners() {
+            document.getElementById('add-warehouse-form').addEventListener('submit', handleAddWarehouse);
+            document.getElementById('add-customer-form').addEventListener('submit', handleAddCustomer);
+            document.getElementById('add-product-form').addEventListener('submit', handleAddProduct);
+            document.getElementById('adjust-stock-form').addEventListener('submit', handleAdjustStock);
+            document.getElementById('transfer-stock-form').addEventListener('submit', handleTransfer);
+            document.getElementById('open-add-product-modal').addEventListener('click', () => toggleModal('add-product-modal', true));
+            document.getElementById('cancel-add-product').addEventListener('click', () => toggleModal('add-product-modal', false));
+            document.getElementById('cancel-adjust-stock').addEventListener('click', () => toggleModal('adjust-stock-modal', false));
+            document.getElementById('open-transfer-modal').addEventListener('click', () => toggleModal('transfer-stock-modal', true));
+            document.getElementById('cancel-transfer').addEventListener('click', () => toggleModal('transfer-stock-modal', false));
+            document.getElementById('close-notification-modal').addEventListener('click', () => toggleModal('notification-modal', false));
+            document.getElementById('transfer-product').addEventListener('change', updateAvailableStockInfo);
+            document.getElementById('transfer-from-warehouse').addEventListener('change', updateAvailableStockInfo);
+            // Confirmation Modal Listeners
+            document.getElementById('cancel-confirmation').addEventListener('click', () => toggleModal('confirmation-modal', false));
+            document.getElementById('confirm-delete').addEventListener('click', () => {
+                if(typeof confirmAction === 'function') {
+                    confirmAction();
+                }
+                toggleModal('confirmation-modal', false);
+            });
+        }
+
+        // --- LÓGICA DE NEGOCIO (Firestore) ---
+        async function handleAddWarehouse(e) { 
+            e.preventDefault(); 
+            const name = e.target.elements['warehouse-name'].value; 
+            const location = e.target.elements['warehouse-location'].value; 
+            try {
+                await addDoc(getCollectionRef('warehouses'), { name, location });
+                e.target.reset();
+                showNotification("Éxito", "Almacén agregado correctamente.");
+            } catch (error) {
+                console.error("Error al agregar almacén:", error);
+                showNotification("Error", "No se pudo guardar el almacén.", true);
+            }
+        }
+        async function handleAddCustomer(e) { 
+            e.preventDefault(); 
+            const name = e.target.elements['customer-name'].value; 
+            try {
+                await addDoc(getCollectionRef('customers'), { name }); 
+                e.target.reset(); 
+                showNotification("Éxito", "Cliente agregado correctamente.");
+            } catch (error) {
+                console.error("Error al agregar cliente:", error);
+                showNotification("Error", "No se pudo guardar el cliente.", true);
+            }
+        }
+        
+        async function handleDeleteProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            const totalStock = getTotalStock(product);
+            if (totalStock > 0) {
+                return showNotification("Acción no permitida", "No se puede eliminar un producto que tiene stock.", true);
+            }
+            try {
+                await deleteDoc(doc(db, `/artifacts/${appId}/public/data/products/${productId}`));
+                showNotification("Éxito", "Producto eliminado correctamente.");
+            } catch (error) {
+                showNotification("Error", "No se pudo eliminar el producto.", true);
+                console.error("Error deleting product:", error);
+            }
+        }
+        async function handleDeleteWarehouse(warehouseId) {
+            const hasStock = products.some(p => (p.stockByWarehouse?.[warehouseId] || 0) > 0);
+            if (hasStock) {
+                return showNotification("Acción no permitida", "No se puede eliminar un almacén que contiene stock.", true);
+            }
+            try {
+                await deleteDoc(doc(db, `/artifacts/${appId}/public/data/warehouses/${warehouseId}`));
+                showNotification("Éxito", "Almacén eliminado correctamente.");
+            } catch (error) {
+                showNotification("Error", "No se pudo eliminar el almacén.", true);
+                console.error("Error deleting warehouse:", error);
+            }
+        }
+        async function handleDeleteCustomer(customerId) {
+            const hasHistory = movements.some(m => m.toType === 'customer' && m.toId === customerId);
+            if (hasHistory) {
+                return showNotification("Acción no permitida", "No se puede eliminar un cliente con historial de movimientos.", true);
+            }
+              try {
+                await deleteDoc(doc(db, `/artifacts/${appId}/public/data/customers/${customerId}`));
+                showNotification("Éxito", "Cliente eliminado correctamente.");
+            } catch (error) {
+                show.error("Error", "No se pudo eliminar el cliente.", true);
+                console.error("Error deleting customer:", error);
+            }
+        }
+
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const form = e.target.elements;
+            
+            const name = form['product-name'].value.trim();
+            const sku = form['product-sku'].value.trim();
+            const minStock = parseInt(form['product-min-stock'].value, 10);
+            const price = parseFloat(form['product-price'].value);
+            const warehouseId = form['initial-stock-warehouse'].value;
+            const quantity = parseInt(form['initial-stock-quantity'].value, 10);
+
+            if (isNaN(minStock) || minStock < 0) return showNotification("Stock Mínimo Inválido", "La alerta de stock mínimo debe ser un número válido.", true);
+            if (isNaN(price) || price < 0) return showNotification("Precio Inválido", "El precio debe ser un número válido y no negativo.", true);
+            if (isNaN(quantity) || quantity <= 0) return showNotification("Cantidad Inválida", "La cantidad inicial debe ser un número mayor a cero.", true);
+            
+            const newProduct = {
+                name,
+                sku,
+                description: form['product-description'].value,
+                minStock,
+                price,
+                stockByWarehouse: {
+                    [warehouseId]: quantity
+                }
+            };
+            try {
+                await addDoc(getCollectionRef('products'), newProduct);
+                e.target.reset();
+                toggleModal('add-product-modal', false);
+                showNotification("Éxito", `El producto "${name}" ha sido agregado.`);
+            } catch (error) {
+                console.error("Error al agregar producto:", error);
+                showNotification("Error de Red", "No se pudo guardar el producto.", true);
+            }
+        }
+        
+        async function handleAdjustStock(e) {
+            e.preventDefault();
+            const productId = document.getElementById('adjust-stock-product-id').value;
+            const warehouseId = document.getElementById('adjust-stock-warehouse').value;
+            const quantity = parseInt(document.getElementById('adjust-stock-quantity').value, 10);
+
+            if (!productId || !warehouseId || isNaN(quantity) || quantity === 0) { 
+                return showNotification("Datos inválidos", "Completa todos los campos correctamente.", true);
+            }
+            
+            const productRef = doc(db, `/artifacts/${appId}/public/data/products/${productId}`);
+            try {
+                  await runTransaction(db, async (t) => {
+                    const productDoc = await t.get(productRef);
+                    if (!productDoc.exists()) throw new Error("El producto no existe.");
+                    
+                    const currentStock = productDoc.data().stockByWarehouse?.[warehouseId] || 0;
+                    if (quantity < 0 && Math.abs(quantity) > currentStock) {
+                        throw new Error("Stock insuficiente para la remoción.");
+                    }
+
+                    const newStock = currentStock + quantity;
+                    t.update(productRef, { [`stockByWarehouse.${warehouseId}`]: newStock });
+                });
+                toggleModal('adjust-stock-modal', false);
+                showNotification("Éxito", "Stock ajustado correctamente.");
+            } catch (error) { 
+                showNotification("Error al ajustar", error.message, true); 
+                console.error("Error adjusting stock:", error);
+            }
+        }
+        
+        async function handleTransfer(e) {
+            e.preventDefault();
+            const form = e.target.elements;
+            const productId = form['transfer-product'].value;
+            const fromWarehouseId = form['transfer-from-warehouse'].value;
+            const quantity = parseInt(form['transfer-quantity'].value, 10);
+            const toValue = form['transfer-to'].value;
+            
+            if (!productId || !fromWarehouseId || !toValue || isNaN(quantity) || quantity <= 0) {
+                return showNotification("Datos incompletos", "Por favor, completa todos los campos correctamente.", true);
+            }
+
+            const fromWarehouse = warehouses.find(w => w.id === fromWarehouseId);
+            if (!fromWarehouse) return showNotification("Error de Datos", "El almacén de origen no es válido.", true);
+
+            const [toType, toId] = toValue.split('_');
+            const toName = (toType === 'warehouse') ? warehouses.find(w => w.id === toId)?.name : customers.find(c => c.id === toId)?.name;
+            if (!toName) return showNotification("Error de Datos", "El destino no es válido.", true);
+            if (toType === 'warehouse' && fromWarehouseId === toId) return showNotification("Transferencia no válida", "No se puede transferir al mismo almacén.", true);
+
+            const productRef = doc(db, `/artifacts/${appId}/public/data/products/${productId}`);
+            const movementRef = collection(db, `/artifacts/${appId}/public/data/stock_movements`);
+            
+            try {
+                await runTransaction(db, async (t) => {
+                    const productDoc = await t.get(productRef);
+                    if (!productDoc.exists()) throw new Error("El producto no existe.");
+
+                    const product = { id: productDoc.id, ...productDoc.data() };
+                    const currentOriginStock = product.stockByWarehouse?.[fromWarehouseId] || 0;
+
+                    if (currentOriginStock < quantity) throw new Error("Stock insuficiente en el almacén de origen.");
+                    
+                    // Decrement from origin
+                    t.update(productRef, { [`stockByWarehouse.${fromWarehouseId}`]: increment(-quantity) });
+
+                    // Increment destination if it's another warehouse
+                    if(toType === 'warehouse') {
+                        t.update(productRef, { [`stockByWarehouse.${toId}`]: increment(quantity) });
+                    }
+                    
+                    // Create movement record
+                    const movementData = {
+                        productId, productName: product.name, quantity, fromType: 'warehouse',
+                        fromId: fromWarehouseId, fromName: fromWarehouse.name,
+                        toType, toId, toName, timestamp: serverTimestamp()
+                    };
+                    t.set(doc(movementRef), movementData);
+                });
+                toggleModal('transfer-stock-modal', false);
+                showNotification("Éxito", "Transferencia realizada correctamente.");
+            } catch (error) { 
+                console.error("Error en la transacción:", error); 
+                showNotification("Error en Transferencia", error.message, true); 
+            }
+        }
+        
+        // --- UTILIDADES ---
+        function populateSelects() {
+            const warehouseOptions = warehouses.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+            const productOptions = products.map(p => `<option value="${p.id}">${p.name} (${p.sku || ''})</option>`).join('');
+            const customerOptions = customers.map(c => `<option value="customer_${c.id}">${c.name} (Cliente)</option>`).join('');
+            const warehouseDestOptions = warehouses.map(w => `<option value="warehouse_${w.id}">${w.name} (Almacén)</option>`).join('');
+
+            ['initial-stock-warehouse', 'adjust-stock-warehouse', 'transfer-from-warehouse'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = `<option value="">Seleccione...</option>` + warehouseOptions;
+            });
+            const transferProductEl = document.getElementById('transfer-product');
+            if(transferProductEl) transferProductEl.innerHTML = `<option value="">Seleccione...</option>` + productOptions;
+            const transferToEl = document.getElementById('transfer-to');
+            if(transferToEl) transferToEl.innerHTML = `<option value="">Seleccione...</option><optgroup label="Almacenes">${warehouseDestOptions}</optgroup><optgroup label="Clientes">${customerOptions}</optgroup>`;
+        }
+        function updateAvailableStockInfo() {
+            const productId = document.getElementById('transfer-product').value;
+            const warehouseId = document.getElementById('transfer-from-warehouse').value;
+            const infoEl = document.getElementById('available-stock-info');
+            if (productId && warehouseId) {
+                const product = products.find(p => p.id === productId);
+                const stock = product?.stockByWarehouse?.[warehouseId] || 0;
+                infoEl.textContent = `Stock disponible: ${stock}`;
+                document.getElementById('transfer-quantity').max = stock;
+            } else {
+                infoEl.textContent = '';
+            }
+        }
+        function getTotalStock(product) {
+            if (!product || !product.stockByWarehouse) return 0;
+            return Object.values(product.stockByWarehouse).reduce((sum, qty) => sum + qty, 0);
+        }
+
+        function getTotalInventoryValue() {
+            return products.reduce((total, product) => {
+                const totalStock = getTotalStock(product);
+                const unitPrice = product.price || 0;
+                return total + (totalStock * unitPrice);
+            }, 0);
+        }
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden', !show);
+            if (!show) {
+                const form = modal.querySelector('form');
+                if (form) form.reset();
+                confirmAction = null; // Reset action on close
+            }
+            feather.replace();
+        }
+        function showNotification(title, message, isError = false) {
+            const modal = document.getElementById('notification-modal');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+            const buttonEl = document.getElementById('close-notification-modal');
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            titleEl.classList.toggle('text-red-600', isError);
+            titleEl.classList.toggle('text-gray-900', !isError);
+            buttonEl.classList.toggle('bg-red-600', isError);
+            buttonEl.classList.toggle('hover:bg-red-700', isError);
+            buttonEl.classList.toggle('bg-emerald-600', !isError);
+            buttonEl.classList.toggle('hover:bg-emerald-700', !isError);
+            toggleModal('notification-modal', true);
+        }
+        function openConfirmationModal(message, onConfirm) {
+            document.getElementById('confirmation-message').textContent = message;
+            confirmAction = onConfirm;
+            toggleModal('confirmation-modal', true);
+        }
+        function openAdjustStockModal(productId, productName) {
+            document.getElementById('adjust-stock-product-id').value = productId;
+            document.getElementById('adjust-stock-product-name').textContent = productName;
+            toggleModal('adjust-stock-modal', true);
+        }
+        function handleNavigation() {
+            const links = document.querySelectorAll('.nav-link');
+            const panes = document.querySelectorAll('.tab-pane');
+            links.forEach(link => {
+                link.addEventListener('click', e => {
+                    e.preventDefault();
+                    const tab = link.dataset.tab;
+                    links.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    panes.forEach(p => p.classList.add('hidden'));
+                    document.getElementById(tab)?.classList.remove('hidden');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
